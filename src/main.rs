@@ -38,9 +38,9 @@ async fn run(_path: Option<String>) {
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
+        format: wgpu::TextureFormat::Rgba8Unorm,
         usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
-        view_formats: &[wgpu::TextureFormat::Rgba8UnormSrgb],
+        view_formats: &[wgpu::TextureFormat::Rgba8Unorm],
     });
     let output_staging_buffer = device.create_buffer(&wgpu::BufferDescriptor {
         label: None,
@@ -60,7 +60,7 @@ async fn run(_path: Option<String>) {
         fragment: Some(wgpu::FragmentState {
             module: &shader,
             entry_point: "fs_main",
-            targets: &[Some(wgpu::TextureFormat::Rgba8UnormSrgb.into())],
+            targets: &[Some(wgpu::TextureFormat::Rgba8Unorm.into())],
         }),
         primitive: wgpu::PrimitiveState::default(),
         depth_stencil: None,
