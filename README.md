@@ -1,4 +1,4 @@
-# WGPU texture sharing with DMA-BUF
+# WGPU texture sharing via DMA-BUF to Glutin and Slint 
 ## Requirements
 - Linux OS
 - EGL extensions:
@@ -6,8 +6,18 @@
   - EGL_EXT_image_dma_buf_import
 
 ## Goal
-Trying to export an OpenGL texture to DMA BUF using the WGPU hal api.
-Should be possible as this C example works: https://gitlab.com/blaztinn/dma-buf-texture-sharing/-/blob/master/main.c  
+Export an OpenGL texture to DMA-BUF using the WGPU hal api.  
+Should be possible as this C example works: https://gitlab.com/blaztinn/dma-buf-texture-sharing/-/blob/master/main.c
 
-## Problem 
-The `egl_export_dmabufimage_query_mesa` function returns status 0
+## How It Works
+- access the WGPU OpenGL texture via the hal api
+- export it in a dma_buf_fd using eglExportDMABUFImageMESA
+- I used two separate processes connected using Unix Datagram sockets
+- read the texture back via glEGLImageTargetTexture2DOES
+- use BorrowedOpenGLTextureBuilder to create the Slint Image or map it via a shader in Glutin
+
+## How to Run
+- Run `sender` using env `WGPU_BACKEND=gl` 
+- Run one of:
+  - `receiver_glutin`
+  - `receiver_slint` using env `SLINT_BACKEND=GL`
