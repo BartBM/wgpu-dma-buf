@@ -1,19 +1,29 @@
 use std::ffi::CString;
+use std::num::NonZeroU32;
 use dma_buf::glutin_example::gl;
-use dma_buf::slint_renderer::SlintRenderer;
+use dma_buf::texture_export_wgpu;
+use dma_buf::glutin_example::gl::types::GLuint;
+use dma_buf::texture_import_gl::dma_buf_to_texture;
+use dma_buf::wgpu_context::WgpuContext;
+use dma_buf::wgpu_data::TEXTURE_DIMS;
 slint::include_modules!();
 
+/// This example creates a WGPU OpenGL texture, exports it via DMA-BUF
 fn main() {
     env_logger::builder()
         .filter_level(log::LevelFilter::Debug)
         .format_timestamp_nanos()
         .init();
 
-
-    let mut slint_renderer: Option<SlintRenderer> = None;
+    // Render to texture
+    let wgpu_context = pollster::block_on(WgpuContext::create());
+    wgpu_context.render_to_texture();
+    let texture = texture_export_wgpu::export_to_opengl_texture(&wgpu_context.texture).expect("texture not created");
+    let (texture_storage_meta_data, dma_buf_fd) = texture_export_wgpu::export_to_dma_buf(&wgpu_context.adapter, texture);
 
     let app = App::new().unwrap();
     let app_weak = app.as_weak();
+    let mut texture_id: GLuint = 0;
 
     if let Err(error) = app.window().set_rendering_notifier(move |state, graphics_api| {
         match state {
@@ -28,12 +38,13 @@ fn main() {
                     },
                     _ => return,
                 };
-
-                slint_renderer = Some(SlintRenderer::new(context));
+                texture_id = dma_buf_to_texture(&context, texture_storage_meta_data, dma_buf_fd);
             }
             slint::RenderingState::BeforeRendering => {
-                if let (Some(slint_renderer), Some(app)) = (slint_renderer.as_mut(), app_weak.upgrade()) {
-                    let slint_image = slint_renderer.render();
+                if let Some(app) = app_weak.upgrade() {
+                    let slint_image = unsafe {
+                        slint::BorrowedOpenGLTextureBuilder::new_gl_2d_rgba_texture(NonZeroU32::new(texture_id).unwrap(), TEXTURE_DIMS.into()).build()
+                    };
                     app.set_texture(slint::Image::from(slint_image));
                     app.window().request_redraw();
                 }
@@ -47,6 +58,9 @@ fn main() {
         }
         std::process::exit(1);
     }
+    std::thread::spawn(move || {
+        wgpu_context.animate();
+    });
 
     app.run().unwrap();
 }

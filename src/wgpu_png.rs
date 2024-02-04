@@ -2,10 +2,9 @@ use std::io::Write;
 use wgpu::{CommandEncoder, Device, Queue, Texture};
 use crate::wgpu_data;
 
-/**
- * Export GPU texture to PNG image for testing
- * source: gfx-rs/wgpu example
- **/
+/// Export GPU texture to PNG image for testing
+/// source: gfx-rs/wgpu example
+
 pub async fn export_texture_image(_path: Option<String>, device: Device, queue: Queue, texture: &Texture, mut command_encoder: CommandEncoder) {
     // The texture now contains our rendered image
     let mut texture_data = Vec::<u8>::with_capacity((wgpu_data::TEXTURE_DIMS.0 * wgpu_data::TEXTURE_DIMS.1 * 4) as usize);

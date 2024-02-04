@@ -9,7 +9,7 @@ use serde::{Serialize, Deserialize};
 use crate::egl_functions::*;
 
 #[repr(C, packed)]
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy)]
 pub struct TextureStorageMetadata {
     pub fourcc: EGLint,
     pub offset: EGLint,
@@ -31,10 +31,9 @@ pub fn export_to_opengl_texture(texture: &Texture) -> Option<NativeTexture> {
     return native_texture;
 }
 
-/**
- * Export texture to DMA buf
- * source: Makepad (EddyB)
- **/
+
+/// Export texture to DMA buf
+/// source: Makepad (EddyB)
 
 pub fn export_to_dma_buf(adapter: &wgpu::Adapter, native_texture: NativeTexture) -> (TextureStorageMetadata, RawFd) {
     unsafe {

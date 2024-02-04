@@ -1,9 +1,7 @@
 use crate::glutin_example::gl::types::GLenum;
 
-/**
- * EGL functions
- * source: Makepad (EddyB)
- **/
+/// EGL functions
+/// source: Makepad (EddyB)
 
 pub type EGLint = i32;
 pub type EGLuint64KHR = u64;

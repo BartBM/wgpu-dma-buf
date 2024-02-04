@@ -1,8 +1,5 @@
-
 use std::error::Error;
-use std::ffi::{CStr, CString};
 use std::num::NonZeroU32;
-use std::ops::Deref;
 
 use raw_window_handle::HasRawWindowHandle;
 use winit::event::{Event, KeyEvent, WindowEvent};
@@ -11,12 +8,11 @@ use winit::window::WindowBuilder;
 
 use glutin::config::ConfigTemplateBuilder;
 use glutin::context::{ContextApi, ContextAttributesBuilder, Version};
-use glutin::display::{AsRawDisplay, GetGlDisplay, RawDisplay};
+use glutin::display::GetGlDisplay;
 use glutin::prelude::*;
 use glutin::surface::SwapInterval;
 
 use glutin_winit::{self, DisplayBuilder, GlWindow};
-use khronos_egl::Upcast;
 use crate::glutin_renderer::Renderer;
 
 pub mod gl {

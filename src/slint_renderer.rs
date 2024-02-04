@@ -23,14 +23,16 @@ impl SlintRenderer {
         if let Some(shaders_version) = get_gl_string(&gl, gl::SHADING_LANGUAGE_VERSION) {
             log::info!("Shaders version on {}", shaders_version.to_string_lossy());
         }
-        let texture_id = dma_buf_to_texture(&gl);
+        let (texture_storage_meta_data, fd) = crate::texture_import_gl::fd_read();
+        let texture_id = dma_buf_to_texture(&gl, texture_storage_meta_data, fd);
+
         Self { gl, texture_id }
     }
 
     pub fn render(&self) -> slint::Image {
-        let result_texture = unsafe {
+        let slint_image = unsafe {
             slint::BorrowedOpenGLTextureBuilder::new_gl_2d_rgba_texture(NonZeroU32::new(self.texture_id).unwrap(), TEXTURE_DIMS.into()).build()
         };
-        result_texture
+        slint_image
     }
 }

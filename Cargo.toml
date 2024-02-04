@@ -48,3 +48,7 @@ path = "src/bin/receiver_glutin.rs"
 [[bin]]
 name = "receiver_slint"
 path = "src/bin/receiver_slint.rs"
+
+[[bin]]
+name = "slint_wgpu_same_process"
+path = "src/bin/slint_wgpu_same_process.rs"

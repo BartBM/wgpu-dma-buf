@@ -1,7 +1,7 @@
 use std::ffi::{CStr, CString};
 use std::ops::Deref;
 use std::ptr;
-use glutin::display::{GlDisplay, RawDisplay};
+use glutin::display::GlDisplay;
 use crate::glutin_example::gl;
 
 pub struct Renderer {
@@ -75,7 +75,8 @@ impl Renderer {
             gl.EnableVertexAttribArray(1);
             gl.VertexAttribPointer(1, 2, gl::FLOAT, gl::FALSE, (5 * std::mem::size_of::<f32>()) as gl::types::GLsizei, (3 * std::mem::size_of::<f32>()) as *const () as *const _);
 
-            let texture = crate::texture_import_gl::dma_buf_to_texture(&gl);
+            let (texture_storage_meta_data, fd) = crate::texture_import_gl::fd_read();
+            let texture = crate::texture_import_gl::dma_buf_to_texture(&gl, texture_storage_meta_data, fd);
 
             Self { program, vao, vbo, gl, texture }
         }

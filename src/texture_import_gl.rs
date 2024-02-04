@@ -1,3 +1,4 @@
+use std::os::fd::RawFd;
 use std::os::unix::net::UnixDatagram;
 use bincode::deserialize;
 use sendfd::RecvWithFd;
@@ -9,18 +10,22 @@ use crate::texture_export_wgpu::{CLIENT_FILENAME, TextureStorageMetadata};
 use khronos_egl::{API as egl};
 use crate::wgpu_data::TEXTURE_DIMS;
 
-pub fn dma_buf_to_texture(gl: &Gles2) -> GLuint {
+pub fn fd_read() -> (TextureStorageMetadata, RawFd) {
     let socket = UnixDatagram::bind(CLIENT_FILENAME).expect("client file not available");
     let mut buf = vec![0; 20];
     let mut recv_fds = [0];
     let (_s, _j) = socket.recv_with_fd(buf.as_mut_slice(), &mut recv_fds).expect("recv_with_fd failed");
     let texture_storage_metadata: TextureStorageMetadata = deserialize(&buf).unwrap();
+    (texture_storage_metadata, recv_fds[0])
+}
 
+pub fn dma_buf_to_texture(gl: &Gles2, texture_storage_metadata: TextureStorageMetadata, dma_buf_fd: RawFd) -> GLuint {
     let image_attribs = [
         EGL_LINUX_DRM_FOURCC_EXT, texture_storage_metadata.fourcc as u32,
         EGL_WIDTH, TEXTURE_DIMS.0,
         EGL_HEIGHT, TEXTURE_DIMS.1,
-        EGL_DMA_BUF_PLANE0_FD_EXT, recv_fds[0] as u32,
+        // EGL_DMA_BUF_PLANE0_FD_EXT, recv_fds[0] as u32,
+        EGL_DMA_BUF_PLANE0_FD_EXT, dma_buf_fd as u32,
         EGL_DMA_BUF_PLANE0_OFFSET_EXT, texture_storage_metadata.offset as u32,
         EGL_DMA_BUF_PLANE0_PITCH_EXT, texture_storage_metadata.stride as u32,
         EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT, texture_storage_metadata.modifiers as u32,
